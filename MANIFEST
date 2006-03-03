@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Tk-FreeDesktop-Wm.t
+lib/Tk/FreeDesktop/Wm.pm
