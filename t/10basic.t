@@ -5,19 +5,33 @@ use Test::More qw(no_plan);
 use Tk;
 use Tk::FreeDesktop::Wm;
 
+use vars qw($DEBUG);
+$DEBUG = 0;
+
 my $mw = tkinit;
 $mw->update;
 my($wr) = $mw->wrapper;
+
 my $fd = Tk::FreeDesktop::Wm->new(mw => $mw);
 isa_ok($fd, "Tk::FreeDesktop::Wm");
 my @supported = $fd->supported;
-warn "@supported";
+warn "@supported\n" if $DEBUG;
 my %supported = map {($_,1)} @supported;
 SKIP: {
     skip("Probably not a freedesktop compliant wm", 1) # XXX no of tests
 	if !@supported;
 
     my @windows;
+
+    my $wm_name;
+ SKIP: {
+	skip("_NET_SUPPORTING_WM_CHECK not supported", 2)
+	    if !$supported{_NET_SUPPORTING_WM_CHECK};
+	my $ret = $fd->supporting_wm;
+	is(ref($ret), "HASH", "Got a return value");
+	$wm_name = $ret->{name};
+	ok(defined $wm_name, "You're running $wm_name");
+    }
 
  SKIP: {
 	skip("_NET_CLIENT_LIST not supported", 1)
@@ -49,21 +63,22 @@ SKIP: {
 	}
     }
 
+    my $no_desktops;
  SKIP: {
 	skip("_NET_NUMBER_OF_DESKTOPS not supported", 2)
 	    if !$supported{_NET_NUMBER_OF_DESKTOPS};
 
-	my $no = $fd->number_of_desktops;
-	cmp_ok($no, ">=", 1, "At minimum one desktop: $no");
+	$no_desktops = $fd->number_of_desktops;
+	cmp_ok($no_desktops, ">=", 1, "At minimum one desktop: $no_desktops");
 
-	$fd->set_number_of_desktops($no + 1);
+	$fd->set_number_of_desktops($no_desktops + 1);
 	$mw->update;
 	# The wm may ignore this
-	$fd->set_number_of_desktops($no);
+	$fd->set_number_of_desktops($no_desktops);
 	$mw->update;
 	# But now we should be at the old number again
-	my $no2 = $fd->number_of_desktops;
-	is($no, $no2, "Same desktop number again: $no");
+	my $no_desktops2 = $fd->number_of_desktops;
+	is($no_desktops, $no_desktops2, "Same desktop number again: $no_desktops");
     }
 
  SKIP: {
@@ -74,8 +89,27 @@ SKIP: {
 	cmp_ok($dh, ">=", $mw->screenheight, "Desktop geometry height");
     }
 
-    # XXX SKIP?
-    {
+ SKIP: {
+	skip("_NET_DESKTOP_VIEWPORT not supported", 2)
+	    if !$supported{_NET_DESKTOP_VIEWPORT};
+
+	my($vx,$vy) = $fd->desktop_viewport;
+	ok(defined $vx, "Viewport X");
+	ok(defined $vy, "Viewport Y");
+
+	$fd->set_desktop_viewport(10, 10);
+	$fd->set_desktop_viewport($vx, $vy);
+    }
+
+    if (0) {
+	local $TODO = "fvwm 2.5.16 claims to support it, but fails!";
+	warn $fd->desktop_names;
+    }
+
+ SKIP: {
+	skip("_NET_ACTIVE_WINDOW not supported", 1)
+	    if !$supported{_NET_ACTIVE_WINDOW};
+
 	my($oldx,$oldy) = ($mw->rootx, $mw->rooty);
 	my($px,$py) = $mw->pointerxy;
 	# feels hacky...
@@ -86,21 +120,42 @@ SKIP: {
 	$mw->geometry("+$oldx+$oldy");
     }
 
-    # XXX SKIP?
-    {
+ SKIP: {
+	skip("_NET_CURRENT_DESKTOP not supported", 2)
+	    if !$supported{_NET_CURRENT_DESKTOP};
+
 	my $cd = $fd->current_desktop;
 	cmp_ok($cd, ">=", 0, "Current desktop is $cd");
+
+    SKIP: {
+	    skip("No number of desktops", 1)
+		if !defined $no_desktops;
+	    cmp_ok($cd, "<", $no_desktops, "Smaller than number of desktops");
+	}
     }
 
-    # XXX SKIP?
-    {
-	local $TODO = "fvwm 2.5.16 claims to support it, but fails!";
-	warn $fd->desktop_names;
+ SKIP: {
+	skip("_NET_WORKAREA not supported", 2)
+	    if !$supported{_NET_WORKAREA};
+	my($x,$y,$x2,$y2) = $fd->workarea;
+	ok(defined $x);
+	ok(defined $y2);
     }
 
-    # XXX SKIP?
+ SKIP: {
+	skip("_NET_VIRTUAL_ROOTS not supported", 0)
+	    if !$supported{_NET_VIRTUAL_ROOTS};
+	my(@w) = $fd->virtual_roots;
+	# no test here
+    }
+
     {
-	warn join(",", $fd->desktop_viewport); # XXX???
+	# Without transparency
+	$fd->set_wm_icon("$FindBin::RealBin/srtbike16.gif");
+	$mw->update;
+	$mw->tk_sleep(0.2);
+	# With transparency
+	$fd->set_wm_icon("$FindBin::RealBin/srtbike32.xpm");
     }
 
     # XXX SKIP?
@@ -124,20 +179,6 @@ SKIP: {
 	warn join(",", $fd->wm_window_type); # XXX???
     }
 
-    # XXX SKIP?
-    {
-	warn join(",", $fd->workarea); # XXX???
-    }
-
-    {
-	# Without transparency
-	$fd->set_wm_icon("$FindBin::RealBin/srtbike16.gif");
-	$mw->update;
-	$mw->tk_sleep(0.2);
-	# With transparency
-	$fd->set_wm_icon("$FindBin::RealBin/srtbike32.xpm");
-    }
-
     if (0) {
 	eval {
 	    my($wrapper)=$mw->wrapper;
@@ -155,7 +196,7 @@ SKIP: {
 }
 $mw->update;
 #$mw->tk_sleep(2);
-MainLoop;
+MainLoop if $DEBUG;
 
 =head2 tk_sleep
 

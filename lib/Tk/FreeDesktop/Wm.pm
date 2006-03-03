@@ -50,6 +50,7 @@ BEGIN {
     # root properties
     for my $prop (qw(supported client_list client_list_stacking
 		     desktop_geometry desktop_names desktop_viewport
+		     virtual_roots
 		 )) {
 	no strict 'refs';
 	*{$prop} = sub { shift->_root_property($prop) };
@@ -103,6 +104,35 @@ sub workarea {
     @{ ($self->workareas)[$desktop] };
 }
 
+sub supporting_wm {
+    my($self) = @_;
+    my($win_id, $win_name, @win_class);
+    eval {
+	my $mw = $self->mw;
+	(undef, $win_id) = $mw->property("get", "_NET_SUPPORTING_WM_CHECK", "root");
+	my(undef, $win_check_id) = $mw->property("get", "_NET_SUPPORTING_WM_CHECK", $win_id);
+	if ($win_id != $win_check_id) {
+	    die "_NET_SUPPORTING_WM_CHECK mismatch: $win_id != $win_check_id";
+	}
+	if (defined $win_id) {
+	    my($wm_name_utf8) = $mw->property("get", "_NET_WM_NAME", $win_id);
+	    if (defined $wm_name_utf8) {
+		require Encode;
+		$win_name = Encode::decode("utf8", $wm_name_utf8, $win_id);
+	    } else {
+		($win_name) = $mw->property("get", "WM_NAME", $win_id);
+	    }
+	    my($raw_win_class) = $mw->property("get", "WM_CLASS", $win_id);
+	    @win_class = split /\0/, $raw_win_class;
+	}
+    };
+
+    return { id    => $win_id,
+	     name  => $win_name,
+	     class => \@win_class,
+	   };
+}
+
 sub set_number_of_desktops {
     my($self, $number) = @_;
     eval {
@@ -110,6 +140,19 @@ sub set_number_of_desktops {
 			    [$number], "root");
     };
     warn $@ if $@;
+}
+
+sub set_desktop_viewport {
+    my($self, $vx, $vy) = @_;
+    eval {
+	$self->mw->property("set", "_NET_DESKTOP_VIEWPORT", "CARDINAL", 32,
+			    [$vx, $vy], "root");
+    };
+    warn $@ if $@;
+}
+
+sub set_active_window {
+    die "NYI";
 }
 
 sub set_wm_icon {
@@ -120,6 +163,8 @@ sub set_wm_icon {
 	$photo = $photo_or_file;
     } else {
 	my $file = $photo_or_file;
+	# XXX Should probably use the real magic instead.
+	# Or first try and then reload the module.
 	if ($file =~ m{\.png$}i) {
 	    require Tk::PNG;
 	} elsif ($file =~ m{\.jpe?g$}i) {
