@@ -181,8 +181,14 @@ sub set_wm_icon {
 	while ($data =~ m<{(.*?)}\s*>g) {
 	    my(@colors) = split /\s+/, $1;
 	    my(@trans);
-	    for my $x (0 .. $#colors) {
-		push @trans, $photo->transparencyGet($x,$y) ? "00" : "FF";
+	    if ($photo->can("transparencyGet")) {
+		# Tk 804
+		for my $x (0 .. $#colors) {
+		    push @trans, $photo->transparencyGet($x,$y) ? "00" : "FF";
+		}
+	    } else {
+		# Tk 800
+		@trans = map { "FF" } (0 .. $#colors);
 	    }
 	    my $x = 0;
 	    push @points, map {
@@ -201,6 +207,10 @@ sub set_wm_icon {
 
 __END__
 
+See also:
+http://www.freedesktop.org/wiki/Standards_2fwm_2dspec
+
+These are defined by fvwm 2.5.16:
 _KDE_NET_SYSTEM_TRAY_WINDOWS
 _KDE_NET_WM_FRAME_STRUT
 _KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR
