@@ -2,5 +2,5 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Tk-FreeDesktop-Wm.t
+t/10basic.t
 lib/Tk/FreeDesktop/Wm.pm
