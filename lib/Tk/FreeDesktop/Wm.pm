@@ -203,6 +203,13 @@ sub set_wm_icon {
 		  [$photo->width, $photo->height, @points], $wr);
 }
 
+sub set_window_type {
+    my($self, $type, $window) = @_;
+    $window = $self->mw if !$window;
+    $window->property("set", "_NET_WM_WINDOW_TYPE", "ATOM", 32,
+		      [$type]);
+}
+
 1;
 
 __END__

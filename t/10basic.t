@@ -23,6 +23,23 @@ SKIP: {
 
     my @windows;
 
+    if (0) { # no effect on metacity:
+	my $t = $mw->Toplevel;
+	for my $type (qw(_NET_WM_WINDOW_TYPE_DESKTOP
+			 _NET_WM_WINDOW_TYPE_DIALOG
+			 _NET_WM_WINDOW_TYPE_DOCK
+			 _NET_WM_WINDOW_TYPE_MENU
+			 _NET_WM_WINDOW_TYPE_NORMAL
+			 _NET_WM_WINDOW_TYPE_TOOLBAR
+		       )) {
+	    diag "Try $type...";
+	    $fd->set_window_type($type, $t);
+	    $t->update;
+	    system("(echo $type; xprop -id " . $t->id . ") >>/tmp/xprop.log &");
+	    $t->after(1000);
+	}
+    }
+
     my $wm_name;
  SKIP: {
 	skip("_NET_SUPPORTING_WM_CHECK not supported", 2)
