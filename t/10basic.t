@@ -215,6 +215,15 @@ SKIP: {
     };
     warn $@ if $@;
 
+    {
+	my $desktop_file = $fd->wm_desktop_file;
+	is $desktop_file, undef, 'no desktop file by default';
+
+	$fd->set_wm_desktop_file("$FindBin::RealBin/10basic.desktop");
+	$desktop_file = $fd->wm_desktop_file;
+	is $desktop_file, "$FindBin::RealBin/10basic.desktop", 'set desktop file';
+    }
+
 }
 $mw->update;
 #$mw->tk_sleep(2);
