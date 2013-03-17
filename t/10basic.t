@@ -4,9 +4,12 @@ use Test::More qw(no_plan);
 
 use Tk;
 use Tk::FreeDesktop::Wm;
+use Getopt::Long;
 
 use vars qw($DEBUG);
 $DEBUG = 0;
+GetOptions("d|debug" => \$DEBUG)
+    or die "usage: $0 [-debug]\n";
 
 my $mw = tkinit;
 $mw->update;
