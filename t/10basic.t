@@ -174,8 +174,10 @@ SKIP: {
 	$fd->set_wm_icon("$FindBin::RealBin/srtbike16.gif");
 	$mw->update;
 	$mw->tk_sleep(0.2);
-	# With transparency
-	$fd->set_wm_icon("$FindBin::RealBin/srtbike32.xpm");
+	# With transparency, and setting multiple icons, and using a png image from file
+	use Tk::PNG;
+	my $p = $mw->Photo(-file => "$FindBin::RealBin/srtbike48.png");
+	$fd->set_wm_icon(["$FindBin::RealBin/srtbike16.gif", "$FindBin::RealBin/srtbike32.xpm", $p]);
     }
 
     # XXX SKIP?
