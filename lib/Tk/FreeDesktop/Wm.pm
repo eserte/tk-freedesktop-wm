@@ -156,51 +156,56 @@ sub set_active_window {
 }
 
 sub set_wm_icon {
-    my($self, $photo_or_file) = @_;
+    my($self, $photos_or_files) = @_;
+    my @data;
     my $mw = $self->mw;
-    my $photo;
-    if (UNIVERSAL::isa($photo_or_file, "Tk::Photo")) {
-	$photo = $photo_or_file;
-    } else {
-	my $file = $photo_or_file;
-	# XXX Should probably use the real magic instead.
-	# Or first try and then reload the module.
-	if ($file =~ m{\.png$}i) {
-	    require Tk::PNG;
-	} elsif ($file =~ m{\.jpe?g$}i) {
-	    require Tk::JPEG;
-	}
-	$photo = $mw->Photo(-file => $file);
-    }
-
-    my @points;
-    {
-	my $data = $photo->data;
-	my $y = 0;
-	# XXX How to get alpha value?
-	while ($data =~ m<{(.*?)}\s*>g) {
-	    my(@colors) = split /\s+/, $1;
-	    my(@trans);
-	    if ($photo->can("transparencyGet")) {
-		# Tk 804
-		for my $x (0 .. $#colors) {
-		    push @trans, $photo->transparencyGet($x,$y) ? "00" : "FF";
-		}
-	    } else {
-		# Tk 800
-		@trans = map { "FF" } (0 .. $#colors);
+    for my $photo_or_file (ref $photos_or_files eq 'ARRAY' ? @$photos_or_files : $photos_or_files) {
+	my $photo;
+	if (UNIVERSAL::isa($photo_or_file, "Tk::Photo")) {
+	    $photo = $photo_or_file;
+	} else {
+	    my $file = $photo_or_file;
+	    # XXX Should probably use the real magic instead.
+	    # Or first try and then reload the module.
+	    if ($file =~ m{\.png$}i) {
+		require Tk::PNG;
+	    } elsif ($file =~ m{\.jpe?g$}i) {
+		require Tk::JPEG;
 	    }
-	    my $x = 0;
-	    push @points, map {
-		hex($trans[$x++] . substr(("0"x8).substr($_, 1),-6));
-	    } @colors;
-	    $y++;
+	    $photo = $mw->Photo(-file => $file);
 	}
+
+	my @points;
+	{
+	    my $data = $photo->data;
+	    my $y = 0;
+	    # XXX How to get alpha value?
+	    while ($data =~ m<{(.*?)}\s*>g) {
+		my(@colors) = split /\s+/, $1;
+		my(@trans);
+		if ($photo->can("transparencyGet")) {
+		    # Tk 804
+		    for my $x (0 .. $#colors) {
+			push @trans, $photo->transparencyGet($x,$y) ? "00" : "FF";
+		    }
+		} else {
+		    # Tk 800
+		    @trans = map { "FF" } (0 .. $#colors);
+		}
+		my $x = 0;
+		push @points, map {
+		    hex($trans[$x++] . substr(("0"x8).substr($_, 1),-6));
+		} @colors;
+		$y++;
+	    }
+	}
+
+	push @data, $photo->width, $photo->height, @points;
     }
 
     my($wr) = $mw->wrapper;
     $mw->property('set', '_NET_WM_ICON', "CARDINAL", 32,
-		  [$photo->width, $photo->height, @points], $wr);
+		  [@data], $wr);
 }
 
 sub set_window_type {
