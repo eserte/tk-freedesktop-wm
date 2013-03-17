@@ -46,6 +46,16 @@ sub _win_property {
     @vals;
 }
 
+sub _win_string_property {
+    my($self, $prop) = @_;
+    my($val) = eval {
+	$self->mw->property("get", "_NET_" . uc($prop), ($self->mw->wrapper)[0]);
+    };
+    #warn $@ if $@;
+    $val =~ s{\0$}{} if defined $val;
+    $val;
+}
+
 BEGIN {
     # root properties
     for my $prop (qw(supported client_list client_list_stacking
@@ -77,6 +87,15 @@ BEGIN {
 	no strict 'refs';
 	*{$prop} = sub {
 	    my($val) = shift->_win_property($prop);
+	    $val;
+	};
+    }
+
+    # ... only returning a string
+    for my $prop (qw(wm_desktop_file)) {
+	no strict 'refs';
+	*{$prop} = sub {
+	    my($val) = shift->_win_string_property($prop);
 	    $val;
 	};
     }
@@ -213,6 +232,13 @@ sub set_window_type {
     $window = $self->mw if !$window;
     $window->property("set", "_NET_WM_WINDOW_TYPE", "ATOM", 32,
 		      [$type]);
+}
+
+sub set_wm_desktop_file {
+    my($self, $file) = @_;
+    my $mw = $self->mw;
+    my($wr) = $mw->wrapper;
+    $mw->property('set', '_NET_WM_DESKTOP_FILE', 'STRING', 8, $file, $wr);
 }
 
 1;
