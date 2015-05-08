@@ -8,8 +8,11 @@ use Tk;
 
 sub new {
     my($class, %args) = @_;
+    my $mw = delete $args{mw};
+    die 'Unhandled arguments: ' . join(' ', %args)
+	if %args;
     my $self = bless {}, $class;
-    $self->mw($args{mw});
+    $self->mw($mw);
     $self;
 }
 
@@ -33,7 +36,6 @@ sub _root_property {
     my(undef, @vals) = eval {
 	$self->mw->property("get", "_NET_" . uc($prop), "root");
     };
-    #warn $@ if $@;
     @vals;
 }
 
@@ -42,7 +44,6 @@ sub _win_property {
     my(undef, @vals) = eval {
 	$self->mw->property("get", "_NET_" . uc($prop), ($self->mw->wrapper)[0]);
     };
-    #warn $@ if $@;
     @vals;
 }
 
@@ -51,23 +52,25 @@ sub _win_string_property {
     my($val) = eval {
 	$self->mw->property("get", "_NET_" . uc($prop), ($self->mw->wrapper)[0]);
     };
-    #warn $@ if $@;
     $val =~ s{\0$}{} if defined $val;
     $val;
 }
 
 BEGIN {
     # root properties
-    for my $prop (qw(supported client_list client_list_stacking
-		     desktop_geometry desktop_names desktop_viewport
-		     virtual_roots
-		 )) {
+    for my $prop (qw(
+			supported client_list client_list_stacking
+			desktop_geometry desktop_names desktop_viewport
+			virtual_roots
+		   )) {
 	no strict 'refs';
 	*{$prop} = sub { shift->_root_property($prop) };
     }
 
     # ... only returning a scalar
-    for my $prop (qw(number_of_desktops active_window current_desktop)) {
+    for my $prop (qw(
+			number_of_desktops active_window current_desktop
+		   )) {
 	no strict 'refs';
 	*{$prop} = sub {
 	    my($val) = shift->_root_property($prop);
@@ -83,7 +86,9 @@ BEGIN {
     }
 
     # ... only returning a scalar
-    for my $prop (qw(wm_desktop wm_state wm_visible_name wm_window_type)) {
+    for my $prop (qw(
+			wm_desktop wm_state wm_visible_name wm_window_type
+		   )) {
 	no strict 'refs';
 	*{$prop} = sub {
 	    my($val) = shift->_win_property($prop);
@@ -92,7 +97,9 @@ BEGIN {
     }
 
     # ... only returning a string
-    for my $prop (qw(wm_desktop_file)) {
+    for my $prop (qw(
+			wm_desktop_file
+		   )) {
 	no strict 'refs';
 	*{$prop} = sub {
 	    my($val) = shift->_win_string_property($prop);
@@ -106,7 +113,6 @@ sub workareas {
     my(undef, @vals) = eval {
 	$self->mw->property("get", "_NET_WORKAREA", "root");
     };
-    #warn $@ if $@;
     my @ret;
     for(my $i = 0; $i < $#vals; $i+=4) {
 	push @ret, [@vals[$i..$i+3]];
@@ -146,9 +152,10 @@ sub supporting_wm {
 	}
     };
 
-    return { id    => $win_id,
-	     name  => $win_name,
-	     class => \@win_class,
+    return {
+	    id    => $win_id,
+	    name  => $win_name,
+	    class => \@win_class,
 	   };
 }
 
@@ -184,11 +191,15 @@ sub set_wm_icon {
 	    $photo = $photo_or_file;
 	} else {
 	    my $file = $photo_or_file;
-	    # XXX Should probably use the real magic instead.
-	    # Or first try and then reload the module.
-	    if ($file =~ m{\.png$}i) {
+	    my $magic;
+	    {
+		open my $fh, $file
+		    or die "Can't open file $file: $!";
+		read $fh, $magic, 10;
+	    }
+	    if      ($magic =~ m{^\x89PNG\x0d\x0a\x1a\x0a}) {
 		require Tk::PNG;
-	    } elsif ($file =~ m{\.jpe?g$}i) {
+	    } elsif ($magic =~ m{^\xFF\xD8}) {
 		require Tk::JPEG;
 	    }
 	    $photo = $mw->Photo(-file => $file);
