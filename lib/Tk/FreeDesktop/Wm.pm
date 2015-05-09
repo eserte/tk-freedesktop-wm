@@ -228,6 +228,8 @@ L<iconimage|Tk::Wm/iconimage> Tk::Wm method. It's restricted because
 images with transparency may not be displayed correctly, and there's
 no support for multiple icon sizes.
 
+See also L</BUGS> for restrictions with alpha channels.
+
 =cut
 
 sub set_wm_icon {
@@ -304,6 +306,20 @@ sub set_wm_desktop_file {
 1;
 
 __END__
+
+=head1 BUGS
+
+=over
+
+=item Alpha channels not supported in L</set_wm_icon>
+
+It's not possible to get the alpha component of a pixel within
+Perl/Tk. The alpha information is transformed into simple transparency
+information, which may lead to suboptimal results. Currently it's
+better to stick to icon images with transparency information only
+(gif, xpm, png without alpha channel), or without transparency at all.
+
+=back
 
 =head1 TODO
 
