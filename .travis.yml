@@ -1,0 +1,30 @@
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq xvfb libx11-dev libfreetype6-dev libxft-dev libpng-dev libz-dev libjpeg-dev $([ "$WINDOW_MANAGER" = "kwin" ] && echo -n "kde-window-manager" || echo -n $WINDOW_MANAGER)
+ - '[ "$USE_SYSTEM_PERL" = "1" ] && perlbrew off || true'
+ - '[ "$USE_SYSTEM_PERL" = "1" ] && sudo apt-get install -qq perl-tk || true'
+ - Xvfb :123 &
+ - export DISPLAY=:123
+ - (sleep 10; $WINDOW_MANAGER) &
+ - sleep 12
+language: perl
+matrix:
+ include:
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=fvwm
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=metacity
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=xfwm4
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=fluxbox
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=sawfish
+  - perl: "5.14"
+    env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=kwin
+  - perl: "5.20"
+    env: WINDOW_MANAGER=fvwm
+  - perl: "5.8"
+    env: WINDOW_MANAGER=fvwm
