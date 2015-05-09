@@ -1,6 +1,9 @@
 Revision history for Perl extension Tk::FreeDesktop::Wm.
 
-0.01  Fri Mar  3 00:34:06 2006
+0.02  2015-05-09
+	- first release
+
+0.01  2006-03-03
 	- original version; created by h2xs 1.23 with options
 		-X -n Tk::FreeDesktop::Wm
 
