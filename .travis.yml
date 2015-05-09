@@ -5,9 +5,16 @@ before_install:
  - '[ "$USE_SYSTEM_PERL" = "1" ] && sudo apt-get install -qq perl-tk || true'
  - Xvfb :123 &
  - export DISPLAY=:123
+ # Wait until X server is available
  - perl -MIO::Socket::INET -e 'for (1..10) { IO::Socket::INET->new(PeerAddr => "localhost:6123") and exit; sleep 1 }'
  - $WINDOW_MANAGER &
+ # Wait until window manager is running
  - sleep 2
+install:
+ # For system perl all dependencies (Tk) are already installed
+ # Skipping this step saves some seconds, as the EUMM upgrade
+ # is not done.
+ - '[ "$USE_SYSTEM_PERL" = "1" ] && true || cpanm --quiet --installdeps --notest .'
 language: perl
 matrix:
  include:
