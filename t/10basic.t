@@ -69,7 +69,10 @@ SKIP: {
     my $ret = $fd->supporting_wm;
     is ref($ret), 'HASH', 'Got a return value';
     my $wm_name = $ret->{name};
-    ok defined $wm_name, "You're running $wm_name";
+    ok defined $wm_name, 'wm name is defined';
+    if ($v) {
+	diag "You're running $wm_name";
+    }
     if ($v >= 2) {
 	diag explain $ret;
     }
