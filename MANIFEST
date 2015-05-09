@@ -1,6 +1,14 @@
 Changes
+lib/Tk/FreeDesktop/Wm.pm
 Makefile.PL
 MANIFEST
+MANIFEST.SKIP
 README
+t/10basic.desktop
 t/10basic.t
-lib/Tk/FreeDesktop/Wm.pm
+t/20experiments.t
+t/30wmicon.t
+t/srtbike16.gif
+t/srtbike32.xpm
+t/srtbike48.png
+t/TestUtil.pm
