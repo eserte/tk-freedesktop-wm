@@ -2,12 +2,15 @@
 
 use strict;
 use FindBin;
+use lib $FindBin::RealBin;
 use Test::More;
 
 use Getopt::Long;
 
 use Tk;
 use Tk::FreeDesktop::Wm;
+
+use TestUtil; # imports tk_sleep
 
 my $interactive;
 GetOptions(
@@ -40,26 +43,4 @@ pass 'set wm icon';
 
 $mw->update;
 MainLoop if $interactive;
-
-=head2 tk_sleep
-
-=for category Tk
-
-    $top->tk_sleep($s);
-
-Sleep $s seconds (fractions are allowed). Use this method in Tk
-programs rather than the blocking sleep function. The difference to
-$top->after($s/1000) is that update events are still allowed in the
-sleeping time.
-
-=cut
-
-sub Tk::Widget::tk_sleep {
-    my($top, $s) = @_;
-    my $sleep_dummy = 0;
-    $top->after($s*1000,
-                sub { $sleep_dummy++ });
-    $top->waitVariable(\$sleep_dummy)
-	unless $sleep_dummy;
-}
 

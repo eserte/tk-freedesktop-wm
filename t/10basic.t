@@ -2,6 +2,7 @@
 
 use strict;
 use FindBin;
+use lib $FindBin::RealBin;
 use Test::More;
 
 if (!defined &explain) {
@@ -15,6 +16,8 @@ use Getopt::Long;
 
 use Tk;
 use Tk::FreeDesktop::Wm;
+
+use TestUtil; # imports tk_sleep
 
 my $v = 1;
 my $interactive;
@@ -154,6 +157,10 @@ SKIP: {
     $mw->geometry("+".($px-10)."+".($py-10));
     $mw->focus;
     $mw->update;
+    if ($fd->active_window != $wr) {
+	diag 'Maybe the WM is slow? Sleep for a second...';
+	$mw->tk_sleep(1);
+    }
     is $fd->active_window, $wr, 'This window is the active one';
     $mw->geometry("+$oldx+$oldy");
 }
