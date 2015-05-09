@@ -152,13 +152,14 @@ SKIP: {
 	if !$supported{_NET_ACTIVE_WINDOW};
 
     my($oldx,$oldy) = ($mw->rootx, $mw->rooty);
-    my($px,$py) = $mw->pointerxy;
     # feels hacky...
-    $mw->geometry("+".($px-10)."+".($py-10));
-    $mw->focus;
-    $mw->update;
-    if ($fd->active_window != $wr) {
-	diag 'Maybe the WM is slow? Sleep for a second...';
+    for (1..5) {
+	my($px,$py) = $mw->pointerxy;
+	$mw->geometry("+".($px-10)."+".($py-10));
+	$mw->focus;
+	$mw->update;
+	last if $fd->active_window == $wr;
+	diag "Maybe the WM is slow? Sleep for a second ($_/5)...";
 	$mw->tk_sleep(1);
     }
     is $fd->active_window, $wr, 'This window is the active one';
