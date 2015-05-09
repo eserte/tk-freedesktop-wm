@@ -9,6 +9,8 @@ t/10basic.t
 t/20experiments.t
 t/30wmicon.t
 t/srtbike16.gif
+t/srtbike16a.png
 t/srtbike32.xpm
+t/srtbike32a.png
 t/srtbike48.png
 t/TestUtil.pm

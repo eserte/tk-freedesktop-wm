@@ -34,10 +34,17 @@ my $fd = Tk::FreeDesktop::Wm->new;
 $fd->set_wm_icon("$FindBin::RealBin/srtbike16.gif");
 $mw->update;
 $mw->tk_sleep(0.2);
+$mw->messageBox(-message => 'continue') if $interactive;
 
 # With transparency, and setting multiple icons, and using a png image from file
 my $p = $mw->Photo(-file => "$FindBin::RealBin/srtbike32.xpm");
 $fd->set_wm_icon(["$FindBin::RealBin/srtbike16.gif", $p, "$FindBin::RealBin/srtbike48.png"]);
+$mw->update;
+$mw->tk_sleep(0.2);
+$mw->messageBox(-message => 'continue') if $interactive;
+
+# Alpha images - this would use Imager if installed
+$fd->set_wm_icon(["$FindBin::RealBin/srtbike16a.png", "$FindBin::RealBin/srtbike32a.png"]);
 
 pass 'set wm icon';
 

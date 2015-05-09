@@ -1,5 +1,8 @@
 Revision history for Perl extension Tk::FreeDesktop::Wm.
 
+0.03  2015-05-09
+	- set_wm_icon workaround with Imager
+
 0.02  2015-05-09
 	- first release
 
