@@ -63,7 +63,7 @@ if ($v) {
 my %supported = map {($_,1)} @supported;
 
 if (!@supported) {
-    skip 'Probably not a freedesktop compliant wm, skipping remaining tests', 1;
+    diag 'Probably not a freedesktop compliant wm, skipping remaining tests';
     exit 0;
 }
 
