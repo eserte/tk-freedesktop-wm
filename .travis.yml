@@ -5,8 +5,9 @@ before_install:
  - '[ "$USE_SYSTEM_PERL" = "1" ] && sudo apt-get install -qq perl-tk || true'
  - Xvfb :123 &
  - export DISPLAY=:123
- - (sleep 10; $WINDOW_MANAGER) &
- - sleep 12
+ - perl -MIO::Socket::INET -e 'for (1..10) { IO::Socket::INET->new(PeerAddr => "localhost:6123") and exit; sleep 1 }'
+ - $WINDOW_MANAGER &
+ - sleep 2
 language: perl
 matrix:
  include:
