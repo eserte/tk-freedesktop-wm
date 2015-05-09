@@ -21,6 +21,7 @@ if (!$mw) {
 } else {
     plan 'no_plan';
 }
+$mw->geometry("+1+1"); # for twm
 $mw->update;
 my($wr) = $mw->wrapper;
 

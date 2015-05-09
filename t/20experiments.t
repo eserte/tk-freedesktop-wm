@@ -20,6 +20,7 @@ if (!$mw) {
 } else {
     plan 'no_plan';
 }
+$mw->geometry("+1+1"); # for twm
 
 $mw->update;
 my($wr) = $mw->wrapper;
@@ -31,6 +32,7 @@ my %supported = map {($_,1)} $fd->supported;
 
 { # XXX no effect on metacity or fvwm:
     my $t = $mw->Toplevel;
+    $t->geometry("+1+1"); # for twm
     for my $type (qw(_NET_WM_WINDOW_TYPE_DESKTOP
 		     _NET_WM_WINDOW_TYPE_DIALOG
 		     _NET_WM_WINDOW_TYPE_DOCK
