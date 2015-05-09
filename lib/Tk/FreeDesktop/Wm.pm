@@ -1,10 +1,37 @@
 package Tk::FreeDesktop::Wm;
 
+=head1 NAME
+
+Tk::FreeDesktop::Wm - a bridge between Tk and freedesktop window managers
+
+=head1 SYNOPSIS
+
+    use Tk;
+    use Tk::FreeDesktop::Wm;
+
+    my $mw = MainWindow->new;
+    my $fd = Tk::FreeDesktop::Wm->new(mw => $mw); # mw argument is optional
+    my @supported_properties = $fd->supported; # empty if WM is not a freedesktop WM
+    my($desktop_width, $desktop_height) = $fd->desktop_geometry;
+    $fd->set_wm_icon(["/path/to/icon16.png", "/path/to/icon32.png", "/path/to/icon48.png"]);
+
+=head1 DESCRIPTION
+
+=cut
+
 use strict;
 use vars qw($VERSION);
 $VERSION = "0.01_50";
 
 use Tk;
+
+=head2 new(mw => $mainwindow)
+
+Construct a B<Tk::FreeDesktop::Wm> object. The named argument C<mw> is
+optional and should be a L<Tk::MainWindow> object, if given. If omitted,
+then the first MainWindow is used.
+
+=cut
 
 sub new {
     my($class, %args) = @_;
@@ -15,6 +42,12 @@ sub new {
     $self->mw($mw);
     $self;
 }
+
+=head2 mw([$mainwindow])
+
+Set or get the MainWindow object.
+
+=cut
 
 sub mw {
     my $self = shift;
@@ -181,6 +214,22 @@ sub set_active_window {
     die "NYI";
 }
 
+=head2 set_wm_icon([$photo, ...])
+
+Set the window manager icon for the running application. The provided
+argument is either a single element or an array reference of images
+(for using icons in different sizes). Images may be specified as
+L<Tk::Photo> objects, or as path names to the image files. By
+specifying PNG and JPEG files L<Tk::PNG> resp. L<Tk::JPEG> is
+automatically loaded.
+
+Without this module, one could use the more restricted
+L<iconimage|Tk::Wm/iconimage> Tk::Wm method. It's restricted because
+images with transparency may not be displayed correctly, and there's
+no support for multiple icon sizes.
+
+=cut
+
 sub set_wm_icon {
     my($self, $photos_or_files) = @_;
     my @data;
@@ -256,8 +305,22 @@ sub set_wm_desktop_file {
 
 __END__
 
-See also:
-http://www.freedesktop.org/wiki/Standards_2fwm_2dspec
+=head1 TODO
+
+Most methods are undocumented.
+
+Many properties are yet unimplemented.
+
+=head1 AUTHOR
+
+Slaven Rezic
+
+=head1 SEE ALSO
+
+L<http://www.freedesktop.org/wiki/Specifications/wm-spec/>,
+L<Tk>, L<Tk::Wm>.
+
+=cut
 
 These are defined by fvwm 2.5.16:
 _KDE_NET_SYSTEM_TRAY_WINDOWS
