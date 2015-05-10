@@ -254,6 +254,7 @@ sub _parse_wm_icon_data {
 	{
 	    open my $fh, $file
 		or die "Can't open file $file: $!";
+	    binmode $fh;
 	    read $fh, $magic, 10;
 	}
 	if      ($magic =~ m{^\x89PNG\x0d\x0a\x1a\x0a}) {
