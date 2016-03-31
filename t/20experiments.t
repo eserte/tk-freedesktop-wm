@@ -39,8 +39,11 @@ my %supported = map {($_,1)} $fd->supported;
 		     _NET_WM_WINDOW_TYPE_MENU
 		     _NET_WM_WINDOW_TYPE_NORMAL
 		     _NET_WM_WINDOW_TYPE_TOOLBAR
+		     _NET_WM_WINDOW_TYPE_UTILITY
 		   )) {
-	diag "Try $type...";
+	diag "Try $type (" .
+	    ($supported{$type} ? "supported" : "unsupported") .
+		")...";
 	$fd->set_window_type($type, $t);
 	$t->update;
 	system('xprop', '-id', $t->id);
