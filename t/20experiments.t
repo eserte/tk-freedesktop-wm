@@ -7,8 +7,12 @@ use Tk;
 use Tk::FreeDesktop::Wm;
 
 my $doit;
-GetOptions('doit' => \$doit)
-    or die "usage: $0 [-doit]\n";
+my $delay;
+GetOptions(
+	   'doit' => \$doit,
+	   'delay' => \$delay,
+	  )
+    or die "usage: $0 [-doit] [-delay]\n";
 
 if (!$doit) {
     plan skip_all => 'experiments not activated (try -doit switch)';
@@ -21,6 +25,7 @@ if (!$mw) {
     plan 'no_plan';
 }
 $mw->geometry("+1+1"); # for twm
+$mw->Label(-text => 'The Main Window')->pack;
 
 $mw->update;
 my($wr) = $mw->wrapper;
@@ -30,24 +35,81 @@ ok $fd;
 
 my %supported = map {($_,1)} $fd->supported;
 
-{ # XXX no effect on metacity or fvwm:
-    my $t = $mw->Toplevel;
+my $another_t = $mw->Toplevel(-title => 'Another toplevel');
+$another_t->geometry('+300+1');
+$another_t->group($mw);
+
+{
+    # no effect on metacity or fvwm (but check again)
+    #
+    # Window atom is set on marco (mint17 wm).
+    # Some observations here:
+    # - some types are special and cause the window
+    #   to be invisible: DESKTOP, DOCK, TOOLBAR. These are
+    #   not tested below
+    # - utility and dialog windows are above the mainwindow, regardless
+    #   whether transient was set; for a normal window transient has to
+    #   set for having this window above the mainwindow
+    # - an utility window is not listed in the window list toolbar
+    # - a programmatic raise does not seem to be possible, unless
+    #   all windows specify their group (see http://wiki.tcl.tk/1461); but
+    #   setting the group does have the same effect as setting transient
+    #   (mainwindow always below the child windows)
+    my $t = $mw->Toplevel(-title => 'WINDOW_TYPE test');
     $t->geometry("+1+1"); # for twm
-    for my $type (qw(_NET_WM_WINDOW_TYPE_DESKTOP
-		     _NET_WM_WINDOW_TYPE_DIALOG
-		     _NET_WM_WINDOW_TYPE_DOCK
+    $t->Label(-text => 'The WINDOW_TYPE test window')->pack;
+    $t->Label(-textvariable => \my $active_win_type)->pack;
+    $t->transient($mw);
+    $t->group($mw);
+    my($t_wr) = $t->wrapper;
+    # Not tested:
+    #_NET_WM_WINDOW_TYPE_DESKTOP
+    #_NET_WM_WINDOW_TYPE_DOCK
+    #_NET_WM_WINDOW_TYPE_TOOLBAR
+    for my $type (qw(
 		     _NET_WM_WINDOW_TYPE_MENU
+		     _NET_WM_WINDOW_TYPE_DIALOG
 		     _NET_WM_WINDOW_TYPE_NORMAL
-		     _NET_WM_WINDOW_TYPE_TOOLBAR
 		     _NET_WM_WINDOW_TYPE_UTILITY
-		   )) {
+		  )
+		 ) {
+	my $win_type_supported = $supported{$type};
 	diag "Try $type (" .
-	    ($supported{$type} ? "supported" : "unsupported") .
+	    ($win_type_supported ? "supported" : "unsupported") .
 		")...";
 	$fd->set_window_type($type, $t);
+	$active_win_type = $type;
 	$t->update;
-	system('xprop', '-id', $t->id);
+	open my $xprop_fh, '-|', 'xprop', '-id', $t_wr
+	    or die $!;
+	my $got_window_type;
+	while(<$xprop_fh>) {
+	    if (/^_NET_WM_WINDOW_TYPE\(ATOM\)\s+=\s+(.*)/) {
+		my $new_window_type = $1;
+		if (!$win_type_supported) {
+		    diag "Current window type: $new_window_type";
+		} else {
+		    if ($got_window_type) {
+			fail "Unexpected: got multiple window types ($got_window_type, $new_window_type)";
+		    }
+		    $got_window_type = $new_window_type;
+		}
+	    }
+	}
+	if ($win_type_supported) {
+	    is $got_window_type, $type;
+	}
 	$t->after(100);
+    }
+
+    if ($delay) {
+	my $sleep_time = 10;
+	diag "Wait for $sleep_time seconds";
+	$t->after($sleep_time/2 * 1000);
+	diag "Now raise the window";
+	$t->raise;
+	$t->update;
+	$t->after($sleep_time/2 * 1000);
     }
 }
 
