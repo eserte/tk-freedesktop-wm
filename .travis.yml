@@ -48,6 +48,9 @@ install:
  # is not done.
  - '[ "$USE_SYSTEM_PERL" = "1" ] && true || cpanm --quiet --installdeps --notest .'
 
+script:
+ - perl Makefile.PL && make test HARNESS_TIMER=1 HARNESS_OPTIONS=j4:c
+
 branches:
  except:
   - /appveyor/
