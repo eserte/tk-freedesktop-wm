@@ -4,35 +4,27 @@ arch:
 matrix:
  include:
   - dist: xenial
-    perl: 5.24
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=twm
     language: minimal
   - dist: bionic
-    perl: 5.26
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=fvwm
     language: minimal
   - dist: focal
-    perl: 5.32
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=metacity
     language: minimal
   - dist: xenial
-    perl: 5.24
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=xfwm4
     language: minimal
   - dist: bionic
-    perl: 5.26
     env: USE_SYSTEM_PERL=1 USE_IMAGER=1 WINDOW_MANAGER=xfwm4
     language: minimal
   - dist: focal
-    perl: 5.32
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=fluxbox
     language: minimal
   - dist: xenial
-    perl: 5.24
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=sawfish
     language: minimal
   - dist: bionic
-    perl: 5.26
     env: USE_SYSTEM_PERL=1 WINDOW_MANAGER=kwin
     language: minimal
   - dist: focal
